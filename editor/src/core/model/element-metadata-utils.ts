@@ -741,10 +741,14 @@ export const MetadataUtils = {
     return stripNulls(
       rootScenesAndElements.map((root) => {
         if (isComponentMetadata(root)) {
-          if (root.rootElement != null) {
-            return root.rootElement.templatePath
-          } else {
+          if (root.type === 'static') {
             return root.scenePath
+          } else {
+            if (root.rootElement != null) {
+              return root.rootElement.templatePath
+            } else {
+              return root.scenePath
+            }
           }
         } else {
           return root.templatePath
