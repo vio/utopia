@@ -965,6 +965,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
       transientState: produceCanvasTransientState(history.current.editor, true),
     },
     elementWarnings: poppedDerived.elementWarnings,
+    dynamicPathAsStaticPath: poppedDerived.dynamicPathAsStaticPath,
   }
 }
 

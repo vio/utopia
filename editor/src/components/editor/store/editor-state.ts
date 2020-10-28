@@ -12,6 +12,7 @@ import {
   UtopiaJSXComponent,
   isJSXElement,
 } from '../../../core/shared/element-template'
+import * as TP from '../../../core/shared/template-path'
 import {
   insertJSXElementChild,
   removeJSXElementChild,
@@ -131,6 +132,7 @@ import {
   immediatelyResolvableDependenciesWithEditorRequirements,
 } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
+import { UTOPIA_ORIGINAL_ID_KEY } from '../../../core/model/utopia-constants'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -921,6 +923,7 @@ export interface DerivedState {
     transientState: TransientCanvasState
   }
   elementWarnings: ComplexMap<TemplatePath, ElementWarnings>
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath
 }
 
 function emptyDerivedState(editorState: EditorState): DerivedState {
@@ -932,6 +935,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
       transientState: produceCanvasTransientState(editorState, false),
     },
     elementWarnings: emptyComplexMap(),
+    dynamicPathAsStaticPath: {},
   }
 }
 
@@ -1215,6 +1219,39 @@ export function deriveState(
     MetadataUtils.createOrderedTemplatePathsFromElements(editor.jsxMetadataKILLME),
   )
 
+  // console.time('dynamicPathAsStaticPath')
+  let dynamicPathAsStaticPath: { [key: string]: StaticInstancePath } = {}
+  function collectStaticPath(children: ElementInstanceMetadata[]) {
+    Utils.fastForEach(children, (element) => {
+      const path = element.templatePath
+      const staticUID = Utils.defaultIfNull(
+        element.props['data-uid'],
+        element.props[UTOPIA_ORIGINAL_ID_KEY],
+      )
+      const parentPath = TP.parentPath(path)
+      if (parentPath != null) {
+        if (TP.isScenePath(parentPath)) {
+          dynamicPathAsStaticPath[TP.toString(path)] = TP.staticInstancePath(parentPath, [
+            staticUID,
+          ])
+        } else {
+          const parentOriginalID = dynamicPathAsStaticPath[TP.toString(parentPath)]
+          if (parentOriginalID != null) {
+            dynamicPathAsStaticPath[TP.toString(path)] = TP.appendToPath(
+              parentOriginalID,
+              staticUID,
+            )
+          }
+        }
+      }
+      collectStaticPath(element.children)
+    })
+  }
+  Utils.fastForEach(editor.jsxMetadataKILLME, (metadata) => {
+    collectStaticPath(metadata.rootElements)
+  })
+  // console.timeEnd('dynamicPathAsStaticPath')
+
   const derived: DerivedState = {
     navigatorTargets: componentKeys,
     canvas: {
@@ -1225,6 +1262,10 @@ export function deriveState(
     elementWarnings: keepDeepReferenceEqualityIfPossible(
       oldDerivedState?.elementWarnings,
       getElementWarnings(getMetadata(editor)),
+    ),
+    dynamicPathAsStaticPath: Utils.keepReferenceIfShallowEqual(
+      derivedState.dynamicPathAsStaticPath,
+      dynamicPathAsStaticPath,
     ),
   }
 

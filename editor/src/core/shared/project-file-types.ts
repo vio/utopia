@@ -25,6 +25,7 @@ export type StaticInstancePath = {
 
 export type StaticTemplatePath = ScenePath | StaticInstancePath
 export type TemplatePath = StaticTemplatePath | InstancePath
+export type DynamicPathAsStaticPath = { [key: string]: StaticInstancePath } //  key: InstancePath
 
 export type PropertyPathPart = string | number
 
