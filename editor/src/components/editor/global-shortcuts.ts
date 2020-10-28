@@ -2,6 +2,7 @@ import { findElementAtPath } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
 import {
+  DynamicPathAsStaticPath,
   importAlias,
   importDetails,
   InstancePath,
@@ -173,7 +174,10 @@ function jumpToParentActions(selectedViews: Array<TemplatePath>): Array<EditorAc
   }
 }
 
-function getTextEditorTarget(editor: EditorState): InstancePath | null {
+function getTextEditorTarget(
+  editor: EditorState,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
+): InstancePath | null {
   if (editor.canvas.dragState != null || editor.selectedViews.length !== 1) {
     return null
   } else {
@@ -184,7 +188,7 @@ function getTextEditorTarget(editor: EditorState): InstancePath | null {
 
     const components = getOpenUtopiaJSXComponentsFromState(editor)
     const imports = getOpenImportsFromState(editor)
-    const element = findElementAtPath(target, components, editor.jsxMetadataKILLME)
+    const element = findElementAtPath(target, components, dynamicPathAsStaticPath)
     if (element != null && isUtopiaAPITextElement(element, imports)) {
       return target
     } else {
@@ -331,6 +335,7 @@ export function handleKeyDown(
   editor: EditorState,
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): void {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
@@ -413,7 +418,7 @@ export function handleKeyDown(
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (modeType === 'select') {
-          const textTarget = getTextEditorTarget(editor)
+          const textTarget = getTextEditorTarget(editor, dynamicPathAsStaticPath)
           if (textTarget != null) {
             return [EditorActions.openTextEditor(textTarget, null)]
           } else {

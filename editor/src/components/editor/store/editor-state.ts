@@ -47,6 +47,7 @@ import {
   isUIJSFile,
   StaticTemplatePath,
   NodeModules,
+  DynamicPathAsStaticPath,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -932,7 +933,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState, false),
+      transientState: produceCanvasTransientState(editorState, false, {}),
     },
     elementWarnings: emptyComplexMap(),
     dynamicPathAsStaticPath: {},
@@ -1207,19 +1208,7 @@ export function getElementWarnings(
   return result
 }
 
-export function deriveState(
-  editor: EditorState,
-  oldDerivedState: DerivedState | null,
-  uidsChanged: boolean,
-): EditorAndDerivedState {
-  const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
-
-  const componentKeys = Utils.keepReferenceIfShallowEqual(
-    derivedState.navigatorTargets,
-    MetadataUtils.createOrderedTemplatePathsFromElements(editor.jsxMetadataKILLME),
-  )
-
-  // console.time('dynamicPathAsStaticPath')
+export function getDynamicPathAsStaticPath(metadata: ComponentMetadata[]): DynamicPathAsStaticPath {
   let dynamicPathAsStaticPath: { [key: string]: StaticInstancePath } = {}
   function collectStaticPath(children: ElementInstanceMetadata[]) {
     Utils.fastForEach(children, (element) => {
@@ -1247,26 +1236,41 @@ export function deriveState(
       collectStaticPath(element.children)
     })
   }
-  Utils.fastForEach(editor.jsxMetadataKILLME, (metadata) => {
-    collectStaticPath(metadata.rootElements)
+  Utils.fastForEach(metadata, (scene) => {
+    collectStaticPath(scene.rootElements)
   })
-  // console.timeEnd('dynamicPathAsStaticPath')
+  return dynamicPathAsStaticPath
+}
+
+export function deriveState(
+  editor: EditorState,
+  oldDerivedState: DerivedState | null,
+  uidsChanged: boolean,
+): EditorAndDerivedState {
+  const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
+
+  const componentKeys = Utils.keepReferenceIfShallowEqual(
+    derivedState.navigatorTargets,
+    MetadataUtils.createOrderedTemplatePathsFromElements(editor.jsxMetadataKILLME),
+  )
+
+  const dynamicPathAsStaticPath = Utils.keepReferenceIfShallowEqual(
+    derivedState.dynamicPathAsStaticPath,
+    getDynamicPathAsStaticPath(editor.jsxMetadataKILLME),
+  )
 
   const derived: DerivedState = {
     navigatorTargets: componentKeys,
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(editor, true),
+      transientState: produceCanvasTransientState(editor, true, dynamicPathAsStaticPath),
     },
     elementWarnings: keepDeepReferenceEqualityIfPossible(
       oldDerivedState?.elementWarnings,
       getElementWarnings(getMetadata(editor)),
     ),
-    dynamicPathAsStaticPath: Utils.keepReferenceIfShallowEqual(
-      derivedState.dynamicPathAsStaticPath,
-      dynamicPathAsStaticPath,
-    ),
+    dynamicPathAsStaticPath: dynamicPathAsStaticPath,
   }
 
   const sanitizedDerivedState = keepDeepReferenceEqualityIfPossible(derivedState, derived)

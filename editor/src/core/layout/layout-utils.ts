@@ -39,7 +39,7 @@ import {
   ModifiableAttribute,
   setJSXValueAtPath,
 } from '../shared/jsx-attributes'
-import { InstancePath, PropertyPath } from '../shared/project-file-types'
+import { DynamicPathAsStaticPath, InstancePath, PropertyPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
 import {
   createLayoutPropertyPath,
@@ -62,6 +62,7 @@ export function maybeSwitchChildrenLayoutProps(
   currentContextMetadata: ComponentMetadata[],
   originalComponents: UtopiaJSXComponent[],
   components: UtopiaJSXComponent[],
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): LayoutPropChangeResult {
   const children = MetadataUtils.getChildrenHandlingGroups(
     targetOriginalContextMetadata,
@@ -85,6 +86,7 @@ export function maybeSwitchChildrenLayoutProps(
         workingComponents,
         null,
         null,
+        dynamicPathAsStaticPath,
       )
       return {
         components: nextComponents,
@@ -107,6 +109,7 @@ export function maybeSwitchLayoutProps(
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle | null,
   parentLayoutSystem: SettableLayoutSystem | null,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): LayoutPropChangeResult {
   const originalParentPath = TP.parentPath(originalPath)
   const originalParent = TP.isInstancePath(originalParentPath)
@@ -154,6 +157,7 @@ export function maybeSwitchLayoutProps(
       targetOriginalContextMetadata,
       currentContextMetadata,
       components,
+      dynamicPathAsStaticPath,
     )
     return {
       components: updatedComponents,
@@ -175,6 +179,7 @@ function getLayoutFunction(
     targetOriginalContextMetadata: ComponentMetadata[],
     currentContextMetadata: ComponentMetadata[],
     components: UtopiaJSXComponent[],
+    dynamicPathAsStaticPath: DynamicPathAsStaticPath,
   ) => SwitchLayoutTypeResult
   didSwitch: boolean
 } {
@@ -300,10 +305,11 @@ export function switchPinnedChildToFlex(
   targetOriginalContextMetadata: ComponentMetadata[],
   currentContextMetadata: ComponentMetadata[],
   components: UtopiaJSXComponent[],
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): SwitchLayoutTypeResult {
   const currentFrame = MetadataUtils.getFrame(target, targetOriginalContextMetadata)
-  const newParent = findJSXElementAtPath(newParentPath, components, currentContextMetadata)
-  const element = findJSXElementAtPath(target, components, currentContextMetadata)
+  const newParent = findJSXElementAtPath(newParentPath, components, dynamicPathAsStaticPath)
+  const element = findJSXElementAtPath(target, components, dynamicPathAsStaticPath)
 
   let propsToAdd: Array<ValueAtPath> = []
 

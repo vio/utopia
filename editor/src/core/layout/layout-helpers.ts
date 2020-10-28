@@ -38,7 +38,12 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
 } from '../shared/jsx-attributes'
-import { Imports, PropertyPath, TemplatePath } from '../shared/project-file-types'
+import {
+  DynamicPathAsStaticPath,
+  Imports,
+  PropertyPath,
+  TemplatePath,
+} from '../shared/project-file-types'
 import { createLayoutPropertyPath, pinnedPropForFramePoint } from './layout-helpers-new'
 import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
 import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
@@ -54,6 +59,7 @@ export function targetRespectsLayout(
   openFilePath: string | null,
   rootComponents: UtopiaJSXComponent[],
   jsxMetadataKILLME: ComponentMetadata[],
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): boolean {
   const propControls = getPropertyControlsForTarget(
     target,
@@ -62,6 +68,7 @@ export function targetRespectsLayout(
     openFilePath,
     rootComponents,
     jsxMetadataKILLME,
+    dynamicPathAsStaticPath,
   )
   return propControls?.style?.type === 'styleobject'
 }

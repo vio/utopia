@@ -842,7 +842,7 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         return 'scene'
       }
 
-      const element = findElementAtPath(view, rootComponents, store.editor.jsxMetadataKILLME)
+      const element = findElementAtPath(view, rootComponents, store.derived.dynamicPathAsStaticPath)
       if (element == null) {
         return null
       } else if (isJSXElement(element)) {
@@ -896,7 +896,12 @@ export function useSelectedPropertyControls(
       Utils.fastForEach(selectedViews.current, (path) => {
         // TODO multiselect
         // TODO use getPropertyControlsForTarget and reselect selectors
-        selectedPropertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
+        selectedPropertyControls =
+          getPropertyControlsForTargetFromEditor(
+            path,
+            store.editor,
+            store.derived.dynamicPathAsStaticPath,
+          ) ?? {}
       })
     }
 
@@ -932,7 +937,11 @@ export function useUsedPropsWithoutControls(): Array<string> {
           forEachOptional(pushComponent, underlyingComponent)
         }
       } else {
-        const element = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const element = findElementAtPath(
+          path,
+          rootComponents,
+          store.derived.dynamicPathAsStaticPath,
+        )
         if (element != null && isJSXElement(element)) {
           const noPathName = getJSXElementNameNoPathName(element.name)
           const underlyingComponent = rootComponents.find(
@@ -989,7 +998,11 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
           forEachOptional(pushPropsForComponent, underlyingComponent)
         }
       } else {
-        const element = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const element = findElementAtPath(
+          path,
+          rootComponents,
+          store.derived.dynamicPathAsStaticPath,
+        )
         if (element != null && isJSXElement(element)) {
           const noPathName = getJSXElementNameNoPathName(element.name)
           const underlyingComponent = rootComponents.find(
@@ -1017,7 +1030,7 @@ export function useInspectorWarningStatus(): boolean {
         return
       }
 
-      const element = findElementAtPath(view, rootComponents, store.editor.jsxMetadataKILLME)
+      const element = findElementAtPath(view, rootComponents, store.derived.dynamicPathAsStaticPath)
       if (element == null || !isJSXElement(element)) {
         return
       } else {

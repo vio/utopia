@@ -329,6 +329,7 @@ describe('moveTemplate', () => {
     const view2 = view('ccc')
     const root = view('aaa', [view1, view2])
     const editor = testEditor(fileModel([root]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
@@ -339,6 +340,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -362,6 +364,7 @@ describe('moveTemplate', () => {
     const view2 = view('ccc', [], 15, 15, 100, 100)
     const root = view('aaa', [view1, view2], 10, 10, 100, 100)
     const editor = testEditor(fileModel([root]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
@@ -382,6 +385,7 @@ describe('moveTemplate', () => {
       } as CanvasRectangle,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(newEditor.projectContents, '/src/app.js')
@@ -410,6 +414,7 @@ describe('moveTemplate', () => {
     const view2 = view('ccc', [], '15%', '15%', 100, 100, 'CCC')
     const root = view('aaa', [view1, view2], 10, 10, 100, 100, 'AAA')
     const editor = testEditor(fileModel([root]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
@@ -430,6 +435,7 @@ describe('moveTemplate', () => {
       } as CanvasRectangle,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -453,6 +459,7 @@ describe('moveTemplate', () => {
     const view1 = view('bbb', [view2])
     const root = view('aaa', [view1])
     const editor = testEditor(fileModel([root]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
@@ -463,6 +470,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -485,6 +493,7 @@ describe('moveTemplate', () => {
     const view1 = view('bbb', [view2])
     const root = view('aaa', [view1])
     const editor = testEditor(fileModel([root]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
@@ -495,6 +504,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -518,6 +528,7 @@ describe('moveTemplate', () => {
     const view3 = view('ddd')
     const root = view('aaa', [view1, view3])
     const editor = testEditor(fileModel([root]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
@@ -528,6 +539,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -550,6 +562,7 @@ describe('moveTemplate', () => {
     const root1 = view('aaa', [view1])
     const root2 = view('ccc', [])
     const editor = testEditor(fileModel([root1, root2]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
@@ -560,6 +573,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -597,6 +611,7 @@ describe('moveTemplate', () => {
     const root1 = view('aaa', [view1])
     const editor = testEditor(fileModel([root1, group1]))
     const groupFrame = canvasRectangle({ x: -10, y: -10, width: 100, height: 100 })
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
@@ -607,6 +622,7 @@ describe('moveTemplate', () => {
       groupFrame,
       editor,
       LayoutSystem.Group,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -649,6 +665,7 @@ describe('moveTemplate', () => {
       [],
     )
     const editor = testEditor(fileModel([flexView, group1]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
@@ -659,6 +676,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -697,6 +715,7 @@ describe('moveTemplate', () => {
     const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
     const root1 = view('aaa', [], 0, 0, 200, 200)
     const editor = testEditor(fileModel([root1, group1]))
+    const derivedState = deriveState(editor, null, false).derived
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['ddd', 'bbb']),
@@ -707,6 +726,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      derivedState.dynamicPathAsStaticPath,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -820,16 +840,26 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   })
   it('switches from pins to flex correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
-    const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
+    const derivedState = deriveState(testEditorWithPins, null, false).derived
+    const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(
+      switchActionToFlex,
+      testEditorWithPins,
+      derivedState,
+    )
     expect(
       getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
     ).toMatchSnapshot()
   })
   it('switches from flex to pins correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
-    let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
+    const derivedState = deriveState(testEditorWithPins, null, false).derived
+    let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(
+      switchActionToFlex,
+      testEditorWithPins,
+      derivedState,
+    )
     const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem)
-    result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result)
+    result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result, derivedState)
     expect(
       getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
     ).toMatchSnapshot()

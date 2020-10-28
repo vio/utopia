@@ -123,6 +123,7 @@ export const EditorComponentInner = betterReactMemo(
           editorStoreRef.current.editor,
           namesByKey,
           editorStoreRef.current.dispatch,
+          editorStoreRef.current.derived.dynamicPathAsStaticPath,
         )
       },
       [editorStoreRef, namesByKey],

@@ -12,7 +12,12 @@ import {
   EditorStore,
   getOpenUIJSFileKey,
 } from '../../editor/store/editor-state'
-import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
+import {
+  TemplatePath,
+  InstancePath,
+  Imports,
+  DynamicPathAsStaticPath,
+} from '../../../core/shared/project-file-types'
 import { CanvasPositions } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
@@ -169,6 +174,7 @@ const selectElementsThatRespectLayout = createSelector(
   (store) => getOpenUIJSFileKey(store.editor),
   (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
   (store) => store.editor.jsxMetadataKILLME,
+  (store) => store.derived.dynamicPathAsStaticPath,
   (
     navigatorTargets: TemplatePath[],
     propertyControlsInfo: PropertyControlsInfo,
@@ -176,6 +182,7 @@ const selectElementsThatRespectLayout = createSelector(
     openFilePath: string | null,
     rootComponents: UtopiaJSXComponent[],
     jsxMetadataKILLME: ComponentMetadata[],
+    dynamicPathAsStaticPath: DynamicPathAsStaticPath,
   ) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
@@ -196,6 +203,7 @@ const selectElementsThatRespectLayout = createSelector(
         openFilePath,
         rootComponents,
         jsxMetadataKILLME,
+        dynamicPathAsStaticPath,
       ),
     )
   },

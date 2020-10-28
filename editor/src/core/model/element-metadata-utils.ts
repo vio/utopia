@@ -62,6 +62,7 @@ import {
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import {
+  DynamicPathAsStaticPath,
   ElementOriginType,
   id,
   Imports,
@@ -1100,6 +1101,7 @@ export const MetadataUtils = {
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
+    dynamicPathAsStaticPath: DynamicPathAsStaticPath,
   ): JSXElementName | null {
     if (TP.isScenePath(path)) {
       const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
@@ -1109,7 +1111,7 @@ export const MetadataUtils = {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components, metadata)
+      const jsxElement = findElementAtPath(path, components, dynamicPathAsStaticPath)
       if (jsxElement != null) {
         if (isJSXElement(jsxElement)) {
           return jsxElement.name
@@ -1124,6 +1126,7 @@ export const MetadataUtils = {
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
+    dynamicPathAsStaticPath: DynamicPathAsStaticPath,
   ): string | null {
     if (TP.isScenePath(path)) {
       const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
@@ -1133,7 +1136,7 @@ export const MetadataUtils = {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components, metadata)
+      const jsxElement = findElementAtPath(path, components, dynamicPathAsStaticPath)
       if (jsxElement != null) {
         if (isJSXElement(jsxElement)) {
           return jsxElement.name.baseVariable
@@ -1148,6 +1151,7 @@ export const MetadataUtils = {
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
     metadata: ComponentMetadata[],
+    dynamicPathAsStaticPath: DynamicPathAsStaticPath,
   ): string | null {
     if (TP.isScenePath(path)) {
       const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
@@ -1157,7 +1161,7 @@ export const MetadataUtils = {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components, metadata)
+      const jsxElement = findElementAtPath(path, components, dynamicPathAsStaticPath)
       if (jsxElement != null) {
         if (isJSXElement(jsxElement)) {
           return getJSXElementNameAsString(jsxElement.name)
@@ -1511,7 +1515,7 @@ export function convertMetadataMap(
 export function findElementAtPath(
   target: TemplatePath | null,
   components: Array<UtopiaJSXComponent>,
-  metadata: ComponentMetadata[],
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): JSXElementChild | null {
   if (target == null) {
     return null
@@ -1519,7 +1523,7 @@ export function findElementAtPath(
     if (TP.isScenePath(target)) {
       return null
     } else {
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(metadata, target)
+      const staticTarget = dynamicPathAsStaticPath[TP.toString(target)]
       if (staticTarget == null) {
         return null
       } else {
@@ -1532,9 +1536,9 @@ export function findElementAtPath(
 export function findJSXElementAtPath(
   target: TemplatePath | null,
   components: Array<UtopiaJSXComponent>,
-  metadata: ComponentMetadata[],
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): JSXElement | null {
-  const elem = findElementAtPath(target, components, metadata)
+  const elem = findElementAtPath(target, components, dynamicPathAsStaticPath)
   return Utils.optionalMap((e) => {
     if (isJSXElement(e)) {
       return e

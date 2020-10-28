@@ -11,6 +11,7 @@ import { updateFramesOfScenesAndComponents } from './canvas-utils'
 import { ParseSuccess } from '../../core/shared/project-file-types'
 import { getComponentsFromTopLevelElements } from '../../core/model/project-file-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/test-utils'
+import { getDynamicPathAsStaticPath } from '../editor/store/editor-state'
 
 describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('a simple TLWH pin change works', async () => {
@@ -37,6 +38,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      getDynamicPathAsStaticPath(createFakeMetadataForParseSuccess(testProject)),
     )
 
     const updatedProject: ParseSuccess = {
@@ -80,6 +82,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      getDynamicPathAsStaticPath(createFakeMetadataForParseSuccess(testProject)),
     )
 
     const updatedProject: ParseSuccess = {
@@ -123,6 +126,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      getDynamicPathAsStaticPath(createFakeMetadataForParseSuccess(testProject)),
     )
 
     const updatedProject: ParseSuccess = {
@@ -175,6 +179,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      getDynamicPathAsStaticPath(createFakeMetadataForParseSuccess(testProject)),
     )
 
     const updatedProject: ParseSuccess = {
@@ -218,6 +223,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      getDynamicPathAsStaticPath(createFakeMetadataForParseSuccess(testProject)),
     )
 
     const updatedProject: ParseSuccess = {
@@ -262,6 +268,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      getDynamicPathAsStaticPath(createFakeMetadataForParseSuccess(testProject)),
     )
 
     const updatedProject: ParseSuccess = {
@@ -305,6 +312,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       createFakeMetadataForParseSuccess(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+      getDynamicPathAsStaticPath(createFakeMetadataForParseSuccess(testProject)),
     )
 
     const updatedProject: ParseSuccess = {

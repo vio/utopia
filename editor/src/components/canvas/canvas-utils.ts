@@ -71,6 +71,7 @@ import {
   TemplatePath,
   importAlias,
   PropertyPath,
+  DynamicPathAsStaticPath,
 } from '../../core/shared/project-file-types'
 import {
   getOrDefaultScenes,
@@ -259,7 +260,11 @@ export function clearDragState(
 ): EditorState {
   let result: EditorState = model
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result, false)
+    const producedTransientCanvasState = produceCanvasTransientState(
+      result,
+      false,
+      derived.dynamicPathAsStaticPath,
+    )
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -295,6 +300,7 @@ export function updateFramesOfScenesAndComponents(
   metadata: Array<ComponentMetadata>,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): Array<UtopiaJSXComponent> {
   let workingComponentsResult = [...components]
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
@@ -435,7 +441,11 @@ export function updateFramesOfScenesAndComponents(
         return
       }
 
-      const element = findJSXElementAtPath(staticTarget, workingComponentsResult, metadata)
+      const element = findJSXElementAtPath(
+        staticTarget,
+        workingComponentsResult,
+        dynamicPathAsStaticPath,
+      )
       if (element == null) {
         throw new Error(`Unexpected result when looking for element: ${element}`)
       }
@@ -444,7 +454,7 @@ export function updateFramesOfScenesAndComponents(
       const parentElement = findJSXElementAtPath(
         staticParentPath,
         workingComponentsResult,
-        metadata,
+        dynamicPathAsStaticPath,
       )
 
       const isFlexContainer =
@@ -471,6 +481,7 @@ export function updateFramesOfScenesAndComponents(
               workingComponentsResult = reorderComponent(
                 workingComponentsResult,
                 metadata,
+                dynamicPathAsStaticPath,
                 originalTarget,
                 frameAndTarget.newIndex,
               )
@@ -1379,6 +1390,7 @@ export function produceResizeCanvasTransientState(
   parseSuccess: ParseSuccess,
   dragState: ResizeDragState,
   preventAnimations: boolean,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     dragState.draggedElements,
@@ -1443,6 +1455,7 @@ export function produceResizeCanvasTransientState(
       editorState.jsxMetadataKILLME,
       framesAndTargets,
       null,
+      dynamicPathAsStaticPath,
     )
 
     // Sync these back up.
@@ -1464,6 +1477,7 @@ export function produceResizeSingleSelectCanvasTransientState(
   parseSuccess: ParseSuccess,
   dragState: ResizeDragState,
   preventAnimations: boolean,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     dragState.draggedElements,
@@ -1523,6 +1537,7 @@ export function produceResizeSingleSelectCanvasTransientState(
     editorState.jsxMetadataKILLME,
     framesAndTargets,
     null,
+    dynamicPathAsStaticPath,
   )
 
   // Sync these back up.
@@ -1541,6 +1556,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): TransientCanvasState {
   function noFileTransientCanvasState(): TransientCanvasState {
     return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
@@ -1616,6 +1632,7 @@ export function produceCanvasTransientState(
                     dragState,
                     parseSuccess,
                     preventAnimations,
+                    dynamicPathAsStaticPath,
                   )
                 case 'RESIZE_DRAG_STATE':
                   if (dragState.isMultiSelect) {
@@ -1624,6 +1641,7 @@ export function produceCanvasTransientState(
                       parseSuccess,
                       dragState,
                       preventAnimations,
+                      dynamicPathAsStaticPath,
                     )
                   } else {
                     return produceResizeSingleSelectCanvasTransientState(
@@ -1631,6 +1649,7 @@ export function produceCanvasTransientState(
                       parseSuccess,
                       dragState,
                       preventAnimations,
+                      dynamicPathAsStaticPath,
                     )
                   }
 
@@ -1802,6 +1821,7 @@ export function moveTemplate(
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
   newParentLayoutSystem: LayoutSystem | null,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
     return {
@@ -1865,12 +1885,13 @@ export function moveTemplate(
         utopiaComponentsIncludingScenes,
         parentFrame,
         newParentLayoutSystem,
+        dynamicPathAsStaticPath,
       )
 
       const jsxElement = findElementAtPath(
         target,
         withLayoutUpdatedForNewContext,
-        withMetadataUpdatedForNewContext,
+        dynamicPathAsStaticPath,
       )
       if (jsxElement == null) {
         return noChanges()
@@ -1905,7 +1926,7 @@ export function moveTemplate(
           const parent = findElementAtPath(
             newParentPath,
             updatedUtopiaComponents,
-            updatedComponentMetadata,
+            dynamicPathAsStaticPath,
           )
           if (parent == null || !isJSXElement(parent)) {
             throw new Error(`Couldn't find parent ${JSON.stringify(newParentPath)}`)
@@ -1974,6 +1995,7 @@ export function moveTemplate(
             updatedComponentMetadata,
             frameChanges,
             parentFrame,
+            dynamicPathAsStaticPath,
           )
 
           updatedUtopiaComponents = frameChangeResult
@@ -2047,6 +2069,7 @@ function produceMoveTransientCanvasState(
   dragState: MoveDragState,
   parseSuccess: ParseSuccess,
   preventAnimations: boolean,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): TransientCanvasState {
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
   let metadata: Array<ComponentMetadata> = editorState.jsxMetadataKILLME
@@ -2094,6 +2117,7 @@ function produceMoveTransientCanvasState(
           selectedViews,
           highlightedViews,
           null,
+          dynamicPathAsStaticPath,
         )
         highlightedViews = reparentResult.highlightedViews
         selectedViews = reparentResult.selectedViews
@@ -2114,7 +2138,12 @@ function produceMoveTransientCanvasState(
     }
   } else if (dragState.duplicate) {
     const parentTarget = MetadataUtils.getDuplicationParentTargets(selectedViews)
-    const duplicateResult = duplicate(elementsToTarget, parentTarget, editorState)
+    const duplicateResult = duplicate(
+      elementsToTarget,
+      parentTarget,
+      editorState,
+      dynamicPathAsStaticPath,
+    )
     if (duplicateResult != null) {
       utopiaComponentsIncludingScenes = duplicateResult.utopiaComponents
       selectedViews = duplicateResult.selectedViews
@@ -2146,6 +2175,7 @@ function produceMoveTransientCanvasState(
     metadata,
     framesAndTargets,
     null,
+    dynamicPathAsStaticPath,
   )
 
   // Sync these back up.
@@ -2285,6 +2315,7 @@ export function duplicate(
   paths: Array<TemplatePath>,
   newParentPath: TemplatePath | null,
   editor: EditorState,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): DuplicateResult | null {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
@@ -2313,7 +2344,7 @@ export function duplicate(
             const scenepath = createSceneTemplatePath(path)
             jsxElement = findJSXElementChildAtPath(utopiaComponents, scenepath)
           } else {
-            jsxElement = findElementAtPath(path, utopiaComponents, metadata)
+            jsxElement = findElementAtPath(path, utopiaComponents, dynamicPathAsStaticPath)
           }
           let uid: string
           if (jsxElement == null) {
@@ -2411,13 +2442,14 @@ export function duplicate(
 export function reorderComponent(
   components: Array<UtopiaJSXComponent>,
   componentMetadata: Array<ComponentMetadata>,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
   target: InstancePath,
   newIndex: number,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
   const parentPath = TP.parentPath(target)
-  const jsxElement = findElementAtPath(target, workingComponents, componentMetadata)
+  const jsxElement = findElementAtPath(target, workingComponents, dynamicPathAsStaticPath)
 
   if (jsxElement != null) {
     const newPosition: IndexPosition = {

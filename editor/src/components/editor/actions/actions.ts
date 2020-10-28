@@ -143,6 +143,7 @@ import {
   Imports,
   importDetails,
   StaticInstancePath,
+  DynamicPathAsStaticPath,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -524,6 +525,7 @@ function switchAndUpdateFrames(
   editor: EditorModel,
   target: InstancePath,
   layoutSystem: SettableLayoutSystem,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
@@ -686,6 +688,7 @@ function switchAndUpdateFrames(
       metadata,
       originalComponents,
       components,
+      dynamicPathAsStaticPath,
     )
   }, withUpdatedLayoutSystem)
 
@@ -710,7 +713,12 @@ function switchAndUpdateFrames(
       )
     }
   })
-  return setCanvasFramesInnerNew(withChildrenUpdated, framesAndTargets, null)
+  return setCanvasFramesInnerNew(
+    withChildrenUpdated,
+    framesAndTargets,
+    null,
+    dynamicPathAsStaticPath,
+  )
 }
 
 export function editorMoveMultiSelectedTemplates(
@@ -720,6 +728,7 @@ export function editorMoveMultiSelectedTemplates(
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
   newParentLayoutType: LayoutSystem | null,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): {
   editor: EditorModel
   newPaths: Array<TemplatePath>
@@ -743,6 +752,7 @@ export function editorMoveMultiSelectedTemplates(
       parentFrame,
       working,
       newParentLayoutType,
+      dynamicPathAsStaticPath,
     )
     if (newPath != null) {
       // when moving multiselected elements that are in a hierarchy the editor has the ancestor with a new path
@@ -770,6 +780,7 @@ export function editorMoveTemplate(
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
   newParentLayoutSystem: LayoutSystem | null,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): {
   editor: EditorModel
   newPath: TemplatePath | null
@@ -798,6 +809,7 @@ export function editorMoveTemplate(
       editorForChanges.selectedViews,
       editorForChanges.highlightedViews,
       newParentLayoutSystem,
+      dynamicPathAsStaticPath,
     )
     return {
       parseSuccessTransform: (success: ParseSuccess) => {
@@ -963,14 +975,22 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
-      transientState: produceCanvasTransientState(history.current.editor, true),
+      transientState: produceCanvasTransientState(
+        history.current.editor,
+        true,
+        poppedDerived.dynamicPathAsStaticPath,
+      ),
     },
     elementWarnings: poppedDerived.elementWarnings,
     dynamicPathAsStaticPath: poppedDerived.dynamicPathAsStaticPath,
   }
 }
 
-function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorModel {
+function deleteElements(
+  targets: TemplatePath[],
+  editor: EditorModel,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
+): EditorModel {
   const openUIJSFile = getOpenUIJSFile(editor)
   if (openUIJSFile == null) {
     console.error(`Attempted to delete element(s) with no UI file open.`)
@@ -1004,7 +1024,7 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
       } else {
         return modifyOpenParseSuccess((parseSuccess) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-          const element = findElementAtPath(target, utopiaComponents, editor.jsxMetadataKILLME)
+          const element = findElementAtPath(target, utopiaComponents, dynamicPathAsStaticPath)
           if (element == null) {
             return parseSuccess
           } else {
@@ -1030,9 +1050,13 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
   }
 }
 
-function duplicateMany(paths: TemplatePath[], editor: EditorModel): EditorModel {
+function duplicateMany(
+  paths: TemplatePath[],
+  editor: EditorModel,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
+): EditorModel {
   const targetParent = TP.getCommonParent(paths)
-  const duplicateResult = duplicate(paths, targetParent, editor)
+  const duplicateResult = duplicate(paths, targetParent, editor, dynamicPathAsStaticPath)
   if (duplicateResult == null) {
     return editor
   } else {
@@ -1075,6 +1099,7 @@ function indexPositionForAdjustment(
 function setZIndexOnSelected(
   editor: EditorModel,
   index: 'back' | 'front' | 'backward' | 'forward',
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): EditorModel {
   const selectedViews = editor.selectedViews
   return selectedViews.reduce(
@@ -1094,6 +1119,7 @@ function setZIndexOnSelected(
         null,
         editor,
         null,
+        dynamicPathAsStaticPath,
       ).editor
     },
     {
@@ -1381,6 +1407,7 @@ export const UPDATE_FNS = {
     action: UnsetProperty,
     editor: EditorModel,
     dispatch: EditorDispatch,
+    derived: DerivedState,
   ): EditorModel => {
     const openUIJSFile = getOpenUIJSFile(editor)
     if (openUIJSFile == null || isLeft(openUIJSFile.fileContents)) {
@@ -1388,7 +1415,7 @@ export const UPDATE_FNS = {
     } else {
       const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.value)
       const target = action.element
-      const element = findElementAtPath(target, components, editor.jsxMetadataKILLME)
+      const element = findElementAtPath(target, components, derived.dynamicPathAsStaticPath)
       if (element == null || !isJSXElement(element)) {
         return editor
       } else {
@@ -1421,7 +1448,12 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
+    return setCanvasFramesInnerNew(
+      editor,
+      action.framesAndTargets,
+      null,
+      derived.dynamicPathAsStaticPath,
+    )
   },
   NAVIGATOR_REORDER: (
     action: NavigatorReorder,
@@ -1492,6 +1524,7 @@ export const UPDATE_FNS = {
       newParentSize,
       editor,
       null,
+      derived.dynamicPathAsStaticPath,
     )
 
     return {
@@ -1510,12 +1543,14 @@ export const UPDATE_FNS = {
       null,
       editor,
       null,
+      derived.dynamicPathAsStaticPath,
     ).editor
   },
   DELETE_SELECTED: (
     action: DeleteSelected,
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
+    derived: DerivedState,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       'Generated elements can only be deleted in code. ',
@@ -1528,19 +1563,24 @@ export const UPDATE_FNS = {
           editor.jsxMetadataKILLME,
           editor.selectedViews,
         )
-        return deleteElements(staticSelectedElements, editor)
+        return deleteElements(staticSelectedElements, editor, derived.dynamicPathAsStaticPath)
       },
       dispatch,
     )
   },
-  DELETE_VIEW: (action: DeleteView, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  DELETE_VIEW: (
+    action: DeleteView,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+    derived: DerivedState,
+  ): EditorModel => {
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be deleted in code.',
       [action.target],
       editor,
       false,
       (e) => {
-        const updatedEditor = deleteElements([action.target], e)
+        const updatedEditor = deleteElements([action.target], e, derived.dynamicPathAsStaticPath)
         const newSelection = TP.parentPath(action.target)
         return {
           ...updatedEditor,
@@ -1555,6 +1595,7 @@ export const UPDATE_FNS = {
     action: DeleteViews,
     editor: EditorModel,
     dispatch: EditorDispatch,
+    derived: DerivedState,
   ): EditorModel => {
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be deleted in code.',
@@ -1568,18 +1609,22 @@ export const UPDATE_FNS = {
           editorState.jsxMetadataKILLME,
           action.targets,
         )
-        return deleteElements(staticSelectedElements, editorState)
+        return deleteElements(staticSelectedElements, editorState, derived.dynamicPathAsStaticPath)
       },
       dispatch,
     )
   },
-  DUPLICATE_SELECTED: (editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  DUPLICATE_SELECTED: (
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+    derived: DerivedState,
+  ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       'Generated elements can only be duplicated in code',
       editor,
       false,
       (e) => {
-        return duplicateMany(editor.selectedViews, e)
+        return duplicateMany(editor.selectedViews, e, derived.dynamicPathAsStaticPath)
       },
       dispatch,
     )
@@ -1588,6 +1633,7 @@ export const UPDATE_FNS = {
     action: DuplicateSpecificElements,
     editor: EditorModel,
     dispatch: EditorDispatch,
+    derived: DerivedState,
   ): EditorModel => {
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be duplicated in code.',
@@ -1595,7 +1641,7 @@ export const UPDATE_FNS = {
       editor,
       false,
       () => {
-        return duplicateMany(action.paths, editor)
+        return duplicateMany(action.paths, editor, derived.dynamicPathAsStaticPath)
       },
       dispatch,
     )
@@ -1609,17 +1655,17 @@ export const UPDATE_FNS = {
       },
     }
   },
-  MOVE_SELECTED_TO_BACK: (editor: EditorModel): EditorModel => {
-    return setZIndexOnSelected(editor, 'back')
+  MOVE_SELECTED_TO_BACK: (editor: EditorModel, derived: DerivedState): EditorModel => {
+    return setZIndexOnSelected(editor, 'back', derived.dynamicPathAsStaticPath)
   },
-  MOVE_SELECTED_TO_FRONT: (editor: EditorModel): EditorModel => {
-    return setZIndexOnSelected(editor, 'front')
+  MOVE_SELECTED_TO_FRONT: (editor: EditorModel, derived: DerivedState): EditorModel => {
+    return setZIndexOnSelected(editor, 'front', derived.dynamicPathAsStaticPath)
   },
-  MOVE_SELECTED_BACKWARD: (editor: EditorModel): EditorModel => {
-    return setZIndexOnSelected(editor, 'backward')
+  MOVE_SELECTED_BACKWARD: (editor: EditorModel, derived: DerivedState): EditorModel => {
+    return setZIndexOnSelected(editor, 'backward', derived.dynamicPathAsStaticPath)
   },
-  MOVE_SELECTED_FORWARD: (editor: EditorModel): EditorModel => {
-    return setZIndexOnSelected(editor, 'forward')
+  MOVE_SELECTED_FORWARD: (editor: EditorModel, derived: DerivedState): EditorModel => {
+    return setZIndexOnSelected(editor, 'forward', derived.dynamicPathAsStaticPath)
   },
   SELECT_COMPONENTS: (
     action: SelectComponents,
@@ -1975,7 +2021,12 @@ export const UPDATE_FNS = {
             getFrameChange(viewPath, boundingBox, isParentFlex),
           ]
           const withWrapperViewAdded = {
-            ...setCanvasFramesInnerNew(withWrapperViewAddedNoFrame, frameChanges, null),
+            ...setCanvasFramesInnerNew(
+              withWrapperViewAddedNoFrame,
+              frameChanges,
+              null,
+              derived.dynamicPathAsStaticPath,
+            ),
           }
 
           // If this is a group parent, realign to the origin
@@ -1996,6 +2047,7 @@ export const UPDATE_FNS = {
             parentBounds,
             withWrapperViewAdded,
             action.layoutSystem,
+            derived.dynamicPathAsStaticPath,
           ).editor
 
           return {
@@ -2012,6 +2064,7 @@ export const UPDATE_FNS = {
     action: UnwrapGroupOrView,
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
+    derived: DerivedState,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Cannot unwrap a generated element.`,
@@ -2065,9 +2118,14 @@ export const UPDATE_FNS = {
             parentFrame,
             working,
             null,
+            derived.dynamicPathAsStaticPath,
           ).editor
         }, editor)
-        const withViewDeleted = deleteElements([action.target], withChildrenMoved)
+        const withViewDeleted = deleteElements(
+          [action.target],
+          withChildrenMoved,
+          derived.dynamicPathAsStaticPath,
+        )
 
         return withViewDeleted
       },
@@ -2314,6 +2372,7 @@ export const UPDATE_FNS = {
     action: PasteJSXElements,
     editor: EditorModel,
     dispatch: EditorDispatch,
+    derived: DerivedState,
   ): EditorModel => {
     const imports = getOpenImportsFromState(editor)
     const targetParent = MetadataUtils.getTargetParentForPaste(
@@ -2380,6 +2439,7 @@ export const UPDATE_FNS = {
                 components,
                 null,
                 null,
+                derived.dynamicPathAsStaticPath,
               ).components
             }
           }
@@ -2710,7 +2770,7 @@ export const UPDATE_FNS = {
     const frameChanges: Array<PinOrFlexFrameChange> = [
       getFrameChange(action.element, canvasFrame, isParentFlex),
     ]
-    return setCanvasFramesInnerNew(editor, frameChanges, null)
+    return setCanvasFramesInnerNew(editor, frameChanges, null, derived.dynamicPathAsStaticPath)
   },
   SET_NAVIGATOR_RENAMING_TARGET: (
     action: SetNavigatorRenamingTarget,
@@ -3692,10 +3752,19 @@ export const UPDATE_FNS = {
   TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
     return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
   },
-  SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
+  SWITCH_LAYOUT_SYSTEM: (
+    action: SwitchLayoutSystem,
+    editor: EditorModel,
+    derived: DerivedState,
+  ): EditorModel => {
     return editor.selectedViews.reduce((working, target) => {
       if (TP.isInstancePath(target)) {
-        return switchAndUpdateFrames(working, target, action.layoutSystem)
+        return switchAndUpdateFrames(
+          working,
+          target,
+          action.layoutSystem,
+          derived.dynamicPathAsStaticPath,
+        )
       } else {
         return working
       }
@@ -3909,10 +3978,18 @@ export const UPDATE_FNS = {
       throw new Error(`Could not be found or is not a file: ${action.imagePath}`)
     }
   },
-  RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
+  RESET_PROP_TO_DEFAULT: (
+    action: ResetPropToDefault,
+    editor: EditorModel,
+    derived: DerivedState,
+  ): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const propertyControls = getPropertyControlsForTargetFromEditor(action.target, editor)
+      const propertyControls = getPropertyControlsForTargetFromEditor(
+        action.target,
+        editor,
+        derived.dynamicPathAsStaticPath,
+      )
       let elementName
       if (TP.isScenePath(action.target)) {
         const element = findJSXElementChildAtPath(
@@ -3930,7 +4007,7 @@ export const UPDATE_FNS = {
         const element = findJSXElementAtPath(
           action.target,
           getOpenUtopiaJSXComponentsFromState(editor),
-          editor.jsxMetadataKILLME,
+          derived.dynamicPathAsStaticPath,
         )
         if (element != null) {
           elementName = getJSXElementNameAsString(element.name)
@@ -4053,7 +4130,11 @@ export const UPDATE_FNS = {
     // No need to actually change the editor state.
     return editor
   },
-  ADD_MISSING_DIMENSIONS: (action: AddMissingDimensions, editor: EditorState): EditorState => {
+  ADD_MISSING_DIMENSIONS: (
+    action: AddMissingDimensions,
+    editor: EditorState,
+    derived: DerivedState,
+  ): EditorState => {
     const ArbitrarySize = 10
     const frameWithExtendedDimensions = canvasRectangle({
       x: action.existingSize.x,
@@ -4066,7 +4147,7 @@ export const UPDATE_FNS = {
       frameWithExtendedDimensions,
       null,
     )
-    return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
+    return setCanvasFramesInnerNew(editor, [frameAndTarget], null, derived.dynamicPathAsStaticPath)
   },
   SET_PACKAGE_STATUS: (action: SetPackageStatus, editor: EditorState): EditorState => {
     const packageName = action.packageName
@@ -4174,7 +4255,12 @@ export function alignOrDistributeSelectedViews(
         alignmentOrDistribution,
         sourceIsParent,
       )
-      return setCanvasFramesInnerNew(editor, updatedCanvasFrames, null)
+      return setCanvasFramesInnerNew(
+        editor,
+        updatedCanvasFrames,
+        null,
+        derived.dynamicPathAsStaticPath,
+      )
     }
   }
   return editor
@@ -4298,6 +4384,7 @@ function setCanvasFramesInnerNew(
   editor: EditorModel,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): EditorModel {
   return modifyOpenScenesAndJSXElements((components) => {
     return updateFramesOfScenesAndComponents(
@@ -4305,6 +4392,7 @@ function setCanvasFramesInnerNew(
       editor.jsxMetadataKILLME,
       framesAndTargets,
       optionalParentFrame,
+      dynamicPathAsStaticPath,
     )
   }, editor)
 }

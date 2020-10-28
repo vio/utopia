@@ -28,6 +28,7 @@ import {
   UtopiaJSXComponent,
 } from '../shared/element-template'
 import {
+  DynamicPathAsStaticPath,
   esCodeFile,
   Imports,
   isEsCodeFile,
@@ -354,6 +355,7 @@ export function getControlsForExternalDependencies(
 export function getPropertyControlsForTargetFromEditor(
   target: TemplatePath,
   editor: EditorState,
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): PropertyControls | null {
   const propertyControlsInfo = editor.propertyControlsInfo
   const imports = getOpenImportsFromState(editor)
@@ -366,6 +368,7 @@ export function getPropertyControlsForTargetFromEditor(
     openFilePath,
     rootComponents,
     editor.jsxMetadataKILLME,
+    dynamicPathAsStaticPath,
   )
 }
 
@@ -376,14 +379,26 @@ export function getPropertyControlsForTarget(
   openFilePath: string | null,
   rootComponents: UtopiaJSXComponent[],
   jsxMetadataKILLME: ComponentMetadata[],
+  dynamicPathAsStaticPath: DynamicPathAsStaticPath,
 ): PropertyControls | null {
-  const tagName = MetadataUtils.getJSXElementTagName(target, rootComponents, jsxMetadataKILLME)
+  const tagName = MetadataUtils.getJSXElementTagName(
+    target,
+    rootComponents,
+    jsxMetadataKILLME,
+    dynamicPathAsStaticPath,
+  )
   const importedName = MetadataUtils.getJSXElementBaseName(
     target,
     rootComponents,
     jsxMetadataKILLME,
+    dynamicPathAsStaticPath,
   )
-  const jsxName = MetadataUtils.getJSXElementName(target, rootComponents, jsxMetadataKILLME)
+  const jsxName = MetadataUtils.getJSXElementName(
+    target,
+    rootComponents,
+    jsxMetadataKILLME,
+    dynamicPathAsStaticPath,
+  )
   if (importedName != null && tagName != null) {
     // TODO default and star imports
     let filename = Object.keys(openImports).find((key) => {

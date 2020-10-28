@@ -59,21 +59,21 @@ export function runSimpleLocalEditorAction(
     case 'LOAD':
       return UPDATE_FNS.LOAD(action, state, dispatch)
     case 'DUPLICATE_SELECTED':
-      return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
+      return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch, derivedState)
     case 'UPDATE_DUPLICATION_STATE':
       return UPDATE_FNS.UPDATE_DUPLICATION_STATE(action, state)
     case 'MOVE_SELECTED_TO_BACK':
-      return UPDATE_FNS.MOVE_SELECTED_TO_BACK(state)
+      return UPDATE_FNS.MOVE_SELECTED_TO_BACK(state, derivedState)
     case 'MOVE_SELECTED_TO_FRONT':
-      return UPDATE_FNS.MOVE_SELECTED_TO_FRONT(state)
+      return UPDATE_FNS.MOVE_SELECTED_TO_FRONT(state, derivedState)
     case 'MOVE_SELECTED_BACKWARD':
-      return UPDATE_FNS.MOVE_SELECTED_BACKWARD(state)
+      return UPDATE_FNS.MOVE_SELECTED_BACKWARD(state, derivedState)
     case 'MOVE_SELECTED_FORWARD':
-      return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
+      return UPDATE_FNS.MOVE_SELECTED_FORWARD(state, derivedState)
     case 'NAVIGATOR_REORDER':
       return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState)
     case 'UNSET_PROPERTY':
-      return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
+      return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch, derivedState)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
@@ -113,7 +113,7 @@ export function runSimpleLocalEditorAction(
     case 'CLOSE_POPUP':
       return UPDATE_FNS.CLOSE_POPUP(action, state)
     case 'PASTE_JSX_ELEMENTS':
-      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch)
+      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, derivedState)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       // side effect 😟
       setClipboardData(createClipboardDataFromSelectionNewWorld(state, derivedState))
@@ -179,7 +179,7 @@ export function runSimpleLocalEditorAction(
     case 'SHOW_CONTEXT_MENU':
       return UPDATE_FNS.SHOW_CONTEXT_MENU(action, state)
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
-      return UPDATE_FNS.DUPLICATE_SPECIFIC_ELEMENTS(action, state, dispatch)
+      return UPDATE_FNS.DUPLICATE_SPECIFIC_ELEMENTS(action, state, dispatch, derivedState)
     case 'SEND_PREVIEW_MODEL':
       return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
@@ -225,21 +225,21 @@ export function runSimpleLocalEditorAction(
     case 'TOGGLE_PROPERTY':
       return UPDATE_FNS.TOGGLE_PROPERTY(action, state)
     case 'SWITCH_LAYOUT_SYSTEM':
-      return UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(action, state)
+      return UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(action, state, derivedState)
     case 'CLEAR_IMAGE_FILE_BLOB':
       return UPDATE_FNS.CLEAR_IMAGE_FILE_BLOB(action, state)
     case 'SAVE_CURRENT_FILE':
       return UPDATE_FNS.SAVE_CURRENT_FILE(action, state)
     case 'DELETE_VIEW':
-      return UPDATE_FNS.DELETE_VIEW(action, state, dispatch)
+      return UPDATE_FNS.DELETE_VIEW(action, state, dispatch, derivedState)
     case 'DELETE_VIEWS':
-      return UPDATE_FNS.DELETE_VIEWS(action, state, dispatch)
+      return UPDATE_FNS.DELETE_VIEWS(action, state, dispatch, derivedState)
     case 'DELETE_SELECTED':
-      return UPDATE_FNS.DELETE_SELECTED(action, state, dispatch)
+      return UPDATE_FNS.DELETE_SELECTED(action, state, dispatch, derivedState)
     case 'WRAP_IN_VIEW':
       return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch)
     case 'UNWRAP_GROUP_OR_VIEW':
-      return UPDATE_FNS.UNWRAP_GROUP_OR_VIEW(action, state, dispatch)
+      return UPDATE_FNS.UNWRAP_GROUP_OR_VIEW(action, state, dispatch, derivedState)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'SET_SCENE_PROP':
@@ -269,7 +269,7 @@ export function runSimpleLocalEditorAction(
     case 'INSERT_DROPPED_IMAGE':
       return UPDATE_FNS.INSERT_DROPPED_IMAGE(action, state)
     case 'RESET_PROP_TO_DEFAULT':
-      return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state)
+      return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state, derivedState)
     case 'UPDATE_NODE_MODULES_CONTENTS':
       return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch)
     case 'UPDATE_PACKAGE_JSON':
@@ -279,7 +279,7 @@ export function runSimpleLocalEditorAction(
     case 'FINISH_CHECKPOINT_TIMER':
       return UPDATE_FNS.FINISH_CHECKPOINT_TIMER(action, state)
     case 'ADD_MISSING_DIMENSIONS':
-      return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state)
+      return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state, derivedState)
     case 'SET_PACKAGE_STATUS':
       return UPDATE_FNS.SET_PACKAGE_STATUS(action, state)
     case 'UPDATE_PROPERTY_CONTROLS_INFO':

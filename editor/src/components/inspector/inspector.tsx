@@ -492,18 +492,23 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<TemplatePath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadataKILLME, rootComponents, isUIJSFile, imports } = useEditorState(
-    (store) => {
-      return {
-        dispatch: store.dispatch,
-        jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-        rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
-        isUIJSFile: isOpenFileUiJs(store.editor),
-        imports: getOpenImportsFromState(store.editor),
-      }
-    },
-    'SingleInspectorEntryPoint',
-  )
+  const {
+    dispatch,
+    jsxMetadataKILLME,
+    rootComponents,
+    isUIJSFile,
+    imports,
+    dynamicPathAsStaticPath,
+  } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
+      isUIJSFile: isOpenFileUiJs(store.editor),
+      imports: getOpenImportsFromState(store.editor),
+      dynamicPathAsStaticPath: store.derived.dynamicPathAsStaticPath,
+    }
+  }, 'SingleInspectorEntryPoint')
 
   let inspectorModel: InspectorModel = {
     isChildOfFlexComponent: false,
@@ -521,11 +526,11 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     // TODO multiselect
     const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
     if (elementMetadata != null) {
-      const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+      const jsxElement = findElementAtPath(path, rootComponents, dynamicPathAsStaticPath)
       const parentPath = TP.parentPath(path)
       const parentElement =
         parentPath != null && TP.isInstancePath(parentPath)
-          ? findElementAtPath(parentPath, rootComponents, jsxMetadataKILLME)
+          ? findElementAtPath(parentPath, rootComponents, dynamicPathAsStaticPath)
           : null
 
       const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadataKILLME, path)
@@ -784,13 +789,17 @@ export const InspectorContextProvider = betterReactMemo<{
   children: React.ReactNode
 }>('InspectorContextProvider', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
-    }
-  }, 'InspectorContextProvider')
+  const { dispatch, jsxMetadataKILLME, rootComponents, dynamicPathAsStaticPath } = useEditorState(
+    (store) => {
+      return {
+        dispatch: store.dispatch,
+        jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+        rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
+        dynamicPathAsStaticPath: store.derived.dynamicPathAsStaticPath,
+      }
+    },
+    'InspectorContextProvider',
+  )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newRealValues: Array<{ [key: string]: any }> = []
@@ -815,7 +824,7 @@ export const InspectorContextProvider = betterReactMemo<{
           return
         }
 
-        const jsxElement = findElementAtPath(path, rootComponents, jsxMetadataKILLME)
+        const jsxElement = findElementAtPath(path, rootComponents, dynamicPathAsStaticPath)
         const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
         newEditedMultiSelectedProps.push(jsxAttributes)
         newRealValues.push(elementMetadata.props)
