@@ -1,6 +1,6 @@
 import { Resizable, ResizeDirection } from 're-resizable'
 import * as React from 'react'
-import { SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
+import { FlexColumn, SimpleFlexRow, UtopiaStyles, UtopiaTheme } from 'uuiui'
 
 import { betterReactMemo } from 'uuiui-deps'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -13,7 +13,7 @@ import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 
-import { RightMenu, RightMenuTab } from './right-menu'
+import { CanvasTopMenu, RightMenuTab } from './canvas-top-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 
 interface SplitViewCanvasRootProps {
@@ -95,7 +95,12 @@ export const SplitViewCanvasRoot = betterReactMemo(
             borderRight: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
           }}
         >
-          {props.isUiJsFileOpen ? <CanvasWrapperComponent {...props} /> : null}
+          {props.isUiJsFileOpen && (
+            <FlexColumn style={{ width: '100%' }}>
+              <CanvasTopMenu visible={true} />
+              <CanvasWrapperComponent {...props} /> : null
+            </FlexColumn>
+          )}
           <Resizable
             defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
             size={props.isUiJsFileOpen ? undefined : { width: '100%', height: '100%' }} // this hack practically disables the Resizable without having to re-mount the code editor iframe
@@ -128,7 +133,6 @@ export const SplitViewCanvasRoot = betterReactMemo(
         </SimpleFlexRow>
         {props.isUiJsFileOpen ? (
           <>
-            <RightMenu visible={true} />
             {isRightMenuExpanded ? (
               <SimpleFlexRow
                 className='Inspector-entrypoint'

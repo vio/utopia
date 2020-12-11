@@ -9,6 +9,7 @@ import {
   UtopiaTheme,
   IcnProps,
   LargerIcons,
+  SimpleFlexRow,
 } from 'uuiui'
 import { betterReactMemo, Utils } from 'uuiui-deps'
 import { isLiveMode } from '../editor/editor-modes'
@@ -35,7 +36,7 @@ export function updateSelectedRightMenuTab(
   }
 }
 
-export function updateRightMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
+export function updateTopMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
   return {
     ...editorState,
     rightMenu: {
@@ -45,13 +46,13 @@ export function updateRightMenuExpanded(editorState: EditorState, expanded: bool
   }
 }
 
-export interface RightMenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TopMenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
   selected: boolean
   highlightSelected: boolean
   icon: React.ReactElement<IcnProps>
 }
 
-export const RightMenuTile: React.FunctionComponent<RightMenuTileProps> = (props) => {
+const TopMenuTile: React.FunctionComponent<TopMenuTileProps> = (props) => {
   const [hovered, setHovered] = React.useState(false)
 
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
@@ -96,24 +97,24 @@ export const RightMenuTile: React.FunctionComponent<RightMenuTileProps> = (props
   )
 }
 
-interface RightMenuProps {
+interface TopMenuProps {
   visible: boolean
 }
 
-export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'RightMenu dispatch')
+export const CanvasTopMenu = betterReactMemo('CanvasTopMenu', (props: TopMenuProps) => {
+  const dispatch = useEditorState((store) => store.dispatch, 'CanvasTopMenu dispatch')
   const interfaceDesigner = useEditorState(
     (store) => store.editor.interfaceDesigner,
-    'RightMenu interfaceDesigner',
+    'CanvasTopMenu interfaceDesigner',
   )
 
-  const isRightMenuExpanded = useEditorState(
+  const isTopMenuExpanded = useEditorState(
     (store) => store.editor.rightMenu.expanded,
-    'RightMenu isRightMenuExpanded',
+    'CanvasTopMenu isTopMenuExpanded',
   )
   const rightMenuSelectedTab = useEditorState(
     (store) => store.editor.rightMenu.selectedTab,
-    'RightMenu rightMenuSelectedTab',
+    'CanvasTopMenu rightMenuSelectedTab',
   )
 
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
@@ -127,7 +128,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
 
   const isCanvasLive = useEditorState(
     (store) => isLiveMode(store.editor.mode),
-    'RightMenu isCanvasLive',
+    'CanvasTopMenu isCanvasLive',
   )
   const toggleLiveCanvas = React.useCallback(() => dispatch([EditorActions.toggleCanvasIsLive()]), [
     dispatch,
@@ -135,7 +136,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
 
   const isPreviewPaneVisible = useEditorState(
     (store) => store.editor.preview.visible,
-    'RightMenu isPreviewPaneVisible',
+    'CanvasTopMenu isPreviewPaneVisible',
   )
   const togglePreviewPaneVisible = React.useCallback(
     () => dispatch([EditorActions.setPanelVisibility('preview', !isPreviewPaneVisible)]),
@@ -144,7 +145,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
 
   const isAdditionalControlsVisible = useEditorState(
     (store) => store.editor.interfaceDesigner.additionalControls,
-    'RightMenu isAdditionalControlsVisible',
+    'CanvasTopMenu isAdditionalControlsVisible',
   )
   const toggleAdditionalControlsVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
@@ -172,7 +173,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     onShow(RightMenuTab.Inspector)
   }, [onShow])
 
-  const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'RightMenu zoomLevel')
+  const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'CanvasTopMenu zoomLevel')
   const zoomIn = React.useCallback(
     () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
     [dispatch, zoomLevel],
@@ -185,7 +186,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   return (
-    <SimpleFlexColumn
+    <SimpleFlexRow
       data-label='canvas-menu'
       style={{
         borderLeft: `1px solid #d3d3d369`,
@@ -193,12 +194,12 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         width: UtopiaTheme.layout.canvasMenuWidth,
       }}
     >
-      <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>
+      <SimpleFlexRow data-title='group'>
         <Tooltip title={'Inspector'} placement='left'>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={isInspectorSelected}
-              highlightSelected={isRightMenuExpanded}
+              highlightSelected={isTopMenuExpanded}
               icon={<LargerIcons.Hamburgermenu />}
               onClick={onShowInspectorTab}
             />
@@ -206,19 +207,19 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         </Tooltip>
         <Tooltip title={'Insert'} placement='left'>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={isInsertMenuSelected}
-              highlightSelected={isRightMenuExpanded}
+              highlightSelected={isTopMenuExpanded}
               icon={<LargerIcons.PlusButton />}
               onClick={onShowInsertTab}
             />
           </span>
         </Tooltip>
-      </SimpleFlexColumn>
-      <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>
+      </SimpleFlexRow>
+      <SimpleFlexRow data-title='group'>
         <Tooltip title={'Live Preview'} placement='left'>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={isCanvasLive}
               highlightSelected={false}
               icon={<LargerIcons.PlayButton />}
@@ -228,19 +229,19 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         </Tooltip>
         <Tooltip title='Reset canvas' placement='left'>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={false}
               highlightSelected={false}
               icon={<LargerIcons.Refresh />}
             />
           </span>
         </Tooltip>
-      </SimpleFlexColumn>
+      </SimpleFlexRow>
 
-      <SimpleFlexColumn data-title='group' style={{ marginBottom: 24, flexGrow: 1 }}>
+      <SimpleFlexRow data-title='group' style={{ flexGrow: 1 }}>
         <Tooltip title='Zoom in' placement='left'>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={false}
               highlightSelected={false}
               icon={<LargerIcons.MagnifyingGlassPlus />}
@@ -253,7 +254,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         </span>
         <Tooltip title='Zoom out' placement='left'>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={false}
               highlightSelected={false}
               icon={<LargerIcons.MagnifyingGlassMinus />}
@@ -261,11 +262,11 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
             />
           </span>
         </Tooltip>
-      </SimpleFlexColumn>
-      <SimpleFlexColumn data-title='group' style={{ marginBottom: 8 }}>
+      </SimpleFlexRow>
+      <SimpleFlexRow data-title='group'>
         <Tooltip title={'Show or hide extra canvas controls'} placement={'left'}>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={isAdditionalControlsVisible}
               highlightSelected={false}
               icon={<LargerIcons.Canvas />}
@@ -275,7 +276,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         </Tooltip>
         <Tooltip title={'Show or hide code'} placement={'left'}>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={isCodePaneVisible}
               highlightSelected={false}
               icon={<LargerIcons.Code />}
@@ -285,7 +286,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         </Tooltip>
         <Tooltip title={'Show or hide preview'} placement={'left'}>
           <span>
-            <RightMenuTile
+            <TopMenuTile
               selected={isPreviewPaneVisible}
               highlightSelected={false}
               icon={<LargerIcons.PreviewPane />}
@@ -293,7 +294,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
             />
           </span>
         </Tooltip>
-      </SimpleFlexColumn>
-    </SimpleFlexColumn>
+      </SimpleFlexRow>
+    </SimpleFlexRow>
   )
 })

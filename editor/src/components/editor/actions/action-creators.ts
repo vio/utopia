@@ -42,7 +42,7 @@ import type {
 } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange } from '../../canvas/canvas-types'
-import type { RightMenuTab } from '../../canvas/right-menu'
+import type { RightMenuTab } from '../../canvas/canvas-top-menu'
 import type { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'

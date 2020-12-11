@@ -27,7 +27,7 @@ import { getOriginalCanvasFrames, createDuplicationNewUIDs } from '../canvas-uti
 import { areYogaChildren } from './select-mode/yoga-utils'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
-import { RightMenuTab } from '../right-menu'
+import { RightMenuTab } from '../canvas-top-menu'
 import { uniqBy } from '../../../core/shared/array-utils'
 
 export const SnappingThreshold = 5

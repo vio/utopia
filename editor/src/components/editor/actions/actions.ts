@@ -439,7 +439,7 @@ import {
   updateRightMenuExpanded,
   updateSelectedRightMenuTab,
   RightMenuTab,
-} from '../../canvas/right-menu'
+} from '../../canvas/canvas-top-menu'
 
 import { Notice } from '../../common/notices'
 import { objectMap } from '../../../core/shared/object-utils'

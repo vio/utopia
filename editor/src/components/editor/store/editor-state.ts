@@ -118,7 +118,7 @@ import {
   isDynamicSceneChildWidthHeightPercentage,
 } from '../../../core/model/scene-utils'
 
-import { RightMenuTab } from '../../canvas/right-menu'
+import { RightMenuTab } from '../../canvas/canvas-top-menu'
 
 import {
   staticInstancePath,
