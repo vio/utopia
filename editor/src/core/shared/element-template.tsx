@@ -4,6 +4,7 @@ import {
   PropertyPathPart,
   ScenePath,
   StaticElementPath,
+  TemplatePath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
 import { Either, isLeft } from './either'
@@ -1283,7 +1284,7 @@ export const emptyJsxMetadata: JSXMetadata = {
 export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadata }
 
 export interface ElementInstanceMetadata {
-  templatePath: InstancePath
+  templatePath: TemplatePath
   element: Either<string, JSXElementChild>
   props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
@@ -1295,7 +1296,7 @@ export interface ElementInstanceMetadata {
 }
 
 export function elementInstanceMetadata(
-  templatePath: InstancePath,
+  templatePath: TemplatePath,
   element: Either<string, JSXElementChild>,
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,

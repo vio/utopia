@@ -2493,9 +2493,8 @@ export function cullSpyCollector(
       if (TP.isScenePath(workingPath)) {
         elementPaths.add(TP.toString(TP.instancePath([], workingPath.sceneElementPath)))
         scenePaths.add(pathAsString)
-      } else {
-        elementPaths.add(pathAsString)
       }
+      elementPaths.add(pathAsString)
       workingPath = TP.parentPath(workingPath)
     }
   })

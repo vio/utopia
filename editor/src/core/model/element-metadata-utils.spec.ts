@@ -37,21 +37,14 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 
 const TestScenePath = 'scene-aaa'
 
+const testComponentMetadataChild1Path = TP.instancePath(
+  [BakedInStoryboardUID, TestScenePath],
+  ['View', 'View0'],
+)
 const testComponentMetadataChild1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View0']),
-  props: {},
-  element: right(jsxTestElement('View', [], [])),
-  children: [],
-  componentInstance: false,
-  specialSizeMeasurements: emptySpecialSizeMeasurements,
-  computedStyle: emptyComputedStyle,
-}
-const testComponentMetadataChild2: ElementInstanceMetadata = {
-  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View1']),
+  templatePath: testComponentMetadataChild1Path,
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
@@ -60,10 +53,30 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
 }
 
+const testComponentMetadataChild2Path = TP.instancePath(
+  [BakedInStoryboardUID, TestScenePath],
+  ['View', 'View1'],
+)
+const testComponentMetadataChild2: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: testComponentMetadataChild2Path,
+  props: {},
+  element: right(jsxTestElement('View', [], [])),
+  children: [],
+  componentInstance: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+}
+
+const testComponentMetadataGrandchildPath = TP.instancePath(
+  [BakedInStoryboardUID, TestScenePath],
+  ['View', 'View2', 'View0'],
+)
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View2', 'View0']),
+  templatePath: testComponentMetadataGrandchildPath,
   props: {
     cica: 'hello',
   },
@@ -74,28 +87,33 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
 }
 
+const testComponentMetadataChild3Path = TP.instancePath(
+  [BakedInStoryboardUID, TestScenePath],
+  ['View', 'View2'],
+)
 const testComponentMetadataChild3: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View2']),
+  templatePath: testComponentMetadataChild3Path,
   props: {},
   element: right(jsxTestElement('View', [], [])),
-  children: [testComponentMetadataGrandchild.templatePath],
+  children: [testComponentMetadataGrandchildPath],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
 }
 
+const testComponentRoot1Path = TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View'])
 const testComponentRoot1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View']),
+  templatePath: testComponentRoot1Path,
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [
-    testComponentMetadataChild1.templatePath,
-    testComponentMetadataChild2.templatePath,
-    testComponentMetadataChild3.templatePath,
+    testComponentMetadataChild1Path,
+    testComponentMetadataChild2Path,
+    testComponentMetadataChild3Path,
   ],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -106,7 +124,7 @@ const testComponentScene: ComponentMetadata = {
   scenePath: TP.scenePath([BakedInStoryboardUID, TestScenePath]),
   templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
   component: 'MyView',
-  rootElements: [testComponentRoot1.templatePath],
+  rootElements: [testComponentRoot1Path],
   sceneResizesContent: false,
   globalFrame: canvasRectangle({
     x: 0,
@@ -345,7 +363,7 @@ describe('getElementLabel', () => {
     },
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
-    [spanElementMetadata.templatePath],
+    [spanPath],
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
@@ -360,7 +378,7 @@ describe('getElementLabel', () => {
       templatePath: instancePath,
       component: 'App',
       sceneResizesContent: false,
-      rootElements: [divElementMetadata.templatePath],
+      rootElements: [divPath],
       globalFrame: canvasRectangle({
         x: 0,
         y: 0,

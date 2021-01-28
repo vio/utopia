@@ -41,7 +41,7 @@ import {
   ModifiableAttribute,
   setJSXValueAtPath,
 } from '../shared/jsx-attributes'
-import { InstancePath, PropertyPath } from '../shared/project-file-types'
+import { InstancePath, PropertyPath, TemplatePath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
 import {
   createLayoutPropertyPath,
@@ -74,25 +74,29 @@ export function maybeSwitchChildrenLayoutProps(
   const result = children.reduce(
     (working, next) => {
       const { components: workingComponents, didSwitch: workingDidSwitch } = working
-      const {
-        components: nextComponents,
-        componentMetadata: nextMetadata,
-        didSwitch: nextDidSwitch,
-      } = maybeSwitchLayoutProps(
-        next.templatePath,
-        next.templatePath,
-        target,
-        targetOriginalContextMetadata,
-        currentContextMetadata,
-        originalComponents,
-        workingComponents,
-        null,
-        null,
-      )
-      return {
-        components: nextComponents,
-        componentMetadata: nextMetadata,
-        didSwitch: workingDidSwitch || nextDidSwitch,
+      if (TP.isInstancePath(next.templatePath)) {
+        const {
+          components: nextComponents,
+          componentMetadata: nextMetadata,
+          didSwitch: nextDidSwitch,
+        } = maybeSwitchLayoutProps(
+          next.templatePath,
+          next.templatePath,
+          target,
+          targetOriginalContextMetadata,
+          currentContextMetadata,
+          originalComponents,
+          workingComponents,
+          null,
+          null,
+        )
+        return {
+          components: nextComponents,
+          componentMetadata: nextMetadata,
+          didSwitch: workingDidSwitch || nextDidSwitch,
+        }
+      } else {
+        return working
       }
     },
     { components: components, componentMetadata: currentContextMetadata, didSwitch: false },
@@ -112,12 +116,10 @@ export function maybeSwitchLayoutProps(
   parentLayoutSystem: SettableLayoutSystem | null,
 ): LayoutPropChangeResult {
   const originalParentPath = TP.parentPath(originalPath)
-  const originalParent = TP.isInstancePath(originalParentPath)
-    ? MetadataUtils.getElementByInstancePathMaybe(
-        targetOriginalContextMetadata.elements,
-        originalParentPath,
-      )
-    : null
+  const originalParent = MetadataUtils.getElementByInstancePathMaybe(
+    targetOriginalContextMetadata.elements,
+    originalParentPath,
+  )
   const newParent = TP.isInstancePath(newParentPath)
     ? MetadataUtils.getElementByInstancePathMaybe(currentContextMetadata.elements, newParentPath)
     : null
@@ -267,7 +269,7 @@ function keepLayoutProps(
 
 export function switchLayoutMetadata(
   metadata: JSXMetadata,
-  target: InstancePath,
+  target: TemplatePath,
   parentLayoutSystem: DetectedLayoutSystem | undefined,
   layoutSystemForChildren: DetectedLayoutSystem | undefined,
   position: CSSPosition | undefined,

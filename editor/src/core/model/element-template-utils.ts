@@ -162,7 +162,11 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   } else if (isUtopiaJSXTextBlock(element)) {
     return element.uniqueID
   } else if (isElementInstanceMetadata(element)) {
-    return TP.toTemplateId(element.templatePath)
+    if (TP.isInstancePath(element.templatePath)) {
+      return TP.toTemplateId(element.templatePath)
+    } else {
+      return TP.scenePathToUid(element.templatePath)
+    }
   } else if (isJSXFragment(element)) {
     return element.uniqueID
   }

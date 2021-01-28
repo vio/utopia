@@ -394,10 +394,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
             if (cachedMetadata == null || !initComplete) {
               const rootElements = walkSceneInner(scene, index, scenePath, validPaths)
-
               const sceneMetadata = collectMetadata(
                 scene,
-                TP.instancePath([], TP.elementPathForPath(scenePath)),
+                scenePath,
                 canvasPoint({ x: 0, y: 0 }),
                 rootElements,
               )
@@ -551,7 +550,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
                 originalPath,
                 pathForChildren,
                 validPaths,
-              )
+              ) as InstancePath[]
               childPaths.push(...childNodePaths)
             })
           }
@@ -559,7 +558,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           if (pathIsValid) {
             const collectedMetadata = collectMetadata(element, uniquePath, parentPoint, childPaths)
             rootMetadata.push(collectedMetadata)
-            return [collectedMetadata.templatePath]
+            return [uniquePath]
           } else {
             return childPaths
           }
@@ -570,7 +569,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
       function collectMetadata(
         element: HTMLElement,
-        instancePath: InstancePath,
+        templatePath: TemplatePath,
         parentPoint: CanvasPoint,
         children: InstancePath[],
       ): ElementInstanceMetadata {
@@ -591,7 +590,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           elementProps[UTOPIA_LABEL_KEY] = labelAttribute
         }
         return elementInstanceMetadata(
-          instancePath,
+          templatePath,
           left(element.tagName.toLowerCase()),
           elementProps,
           globalFrame,
@@ -599,7 +598,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           children,
           false,
           getSpecialMeasurements(element),
-          getComputedStyle(element, instancePath),
+          getComputedStyle(element, templatePath),
         )
       }
 

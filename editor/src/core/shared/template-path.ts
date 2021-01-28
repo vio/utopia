@@ -356,6 +356,11 @@ function elementPathToUID(path: ElementPath): id {
 export function toTemplateId(path: InstancePath): id {
   return elementPathToUID(path.element)
 }
+
+export function scenePathToUid(path: ScenePath): id {
+  return last(path.sceneElementPath!)!
+}
+
 export function toUid(path: InstancePath): id {
   return elementPathToUID(path.element)
 }

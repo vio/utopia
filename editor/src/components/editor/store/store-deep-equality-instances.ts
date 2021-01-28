@@ -638,7 +638,7 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
 > {
   return combine9EqualityCalls(
     (metadata) => metadata.templatePath,
-    InstancePathKeepDeepEquality,
+    TemplatePathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.props,

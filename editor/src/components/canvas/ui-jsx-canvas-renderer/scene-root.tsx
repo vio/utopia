@@ -63,9 +63,9 @@ function useRunSpy(
     style: props.style ?? {},
   }
   if (shouldIncludeCanvasRootInTheSpy) {
-    metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
+    metadataContext.current.spyValues.metadata[TP.toString(scenePath)] = {
       element: left('Scene'),
-      templatePath: templatePath,
+      templatePath: scenePath,
       props: {},
       globalFrame: null,
       localFrame: null,

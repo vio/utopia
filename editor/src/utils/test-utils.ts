@@ -217,11 +217,13 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
         {},
       )
 
-      rootElements = elementMetadata.map((individualElementMetadata) => {
-        const path = individualElementMetadata.templatePath
-        elements[TP.toString(path)] = individualElementMetadata
-        return path
-      })
+      rootElements = elementMetadata
+        .map((individualElementMetadata) => {
+          const path = individualElementMetadata.templatePath
+          elements[TP.toString(path)] = individualElementMetadata
+          return path
+        })
+        .filter(TP.isInstancePath)
     }
 
     return {
@@ -253,11 +255,13 @@ export function createFakeMetadataForComponents(
         {},
       )
 
-      const rootElements: Array<InstancePath> = elementMetadata.map((individualElementMetadata) => {
-        const path = individualElementMetadata.templatePath
-        elements[TP.toString(path)] = individualElementMetadata
-        return path
-      })
+      const rootElements: Array<InstancePath> = elementMetadata
+        .map((individualElementMetadata) => {
+          const path = individualElementMetadata.templatePath
+          elements[TP.toString(path)] = individualElementMetadata
+          return path
+        })
+        .filter(TP.isInstancePath)
 
       components.push({
         scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
@@ -287,7 +291,7 @@ function createFakeMetadataForJSXElement(
     const children = element.children.flatMap((child) =>
       createFakeMetadataForJSXElement(child, templatePath, inScope, props),
     )
-    const childPaths = children.map((child) => child.templatePath)
+    const childPaths = children.map((child) => child.templatePath).filter(TP.isInstancePath)
 
     elements.push({
       templatePath: templatePath,

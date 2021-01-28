@@ -165,7 +165,7 @@ export const MetadataUtils = {
   },
   getElementByInstancePathMaybe(
     elementMap: ElementInstanceMetadataMap,
-    path: InstancePath | null,
+    path: TemplatePath | null,
   ): ElementInstanceMetadata | null {
     if (path == null) {
       return null
@@ -175,7 +175,7 @@ export const MetadataUtils = {
   },
   getElementsByInstancePath(
     elementMap: ElementInstanceMetadataMap,
-    paths: Array<InstancePath>,
+    paths: Array<TemplatePath>,
   ): Array<ElementInstanceMetadata> {
     return stripNulls(
       paths.map((path) => MetadataUtils.getElementByInstancePathMaybe(elementMap, path)),
@@ -589,8 +589,12 @@ export const MetadataUtils = {
         storyboardRoot.rootElements,
       )
       return rootChildrenOfStoryboard.map((child) => {
-        if (isLeft(child.element) && child.element.value === 'Scene') {
-          const foundScenePath = TP.scenePath(child.templatePath.element)
+        if (
+          isLeft(child.element) &&
+          child.element.value === 'Scene' &&
+          TP.isScenePath(child.templatePath)
+        ) {
+          const foundScenePath = child.templatePath
           const realSceneRoot = MetadataUtils.findSceneByTemplatePath(
             metadata.components,
             foundScenePath,
@@ -774,7 +778,7 @@ export const MetadataUtils = {
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
-    function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
+    function walkAndAddKeys(path: TemplatePath, collapsedAncestor: boolean): void {
       const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
       const children = element?.children ?? []
       const isCollapsed = TP.containsPath(path, collapsedViews)
@@ -809,7 +813,7 @@ export const MetadataUtils = {
   },
   transformAtPathOptionally(
     elementMap: ElementInstanceMetadataMap,
-    path: InstancePath,
+    path: TemplatePath,
     transform: (element: ElementInstanceMetadata) => ElementInstanceMetadata,
   ): ElementInstanceMetadataMap {
     const existing = MetadataUtils.getElementByInstancePathMaybe(elementMap, path)
@@ -1088,7 +1092,7 @@ export const MetadataUtils = {
     // like that in the future. But for now this is likely "good enough" that it
     // wont make any difference.
     let workingElements: ElementInstanceMetadataMap = { ...fromSpy.elements }
-    let newlyFoundElements: Array<InstancePath> = []
+    let newlyFoundElements: Array<TemplatePath> = []
     fastForEach(fromDOM, (domElem) => {
       const spyElem = MetadataUtils.getElementByInstancePathMaybe(
         fromSpy.elements,
@@ -1155,9 +1159,9 @@ export const MetadataUtils = {
     })
 
     const newComponents = fromSpy.components.map((scene) => {
-      const newlyFoundChildren = newlyFoundElements.filter((path) =>
-        TP.isChildOf(path, scene.scenePath),
-      )
+      const newlyFoundChildren = newlyFoundElements
+        .filter((path) => TP.isChildOf(path, scene.scenePath))
+        .filter(TP.isInstancePath)
       const newRootElements = TP.addPathsIfMissing(scene.rootElements, newlyFoundChildren)
       const sceneMetadata = MetadataUtils.getElementByInstancePathMaybe(
         workingElements,
@@ -1219,7 +1223,7 @@ export const MetadataUtils = {
   },
   updateParentWithNewChildPath(
     targetParent: TemplatePath | null,
-    childPath: InstancePath,
+    childPath: TemplatePath,
     elements: ElementInstanceMetadataMap,
     indexPosition: IndexPosition | null,
   ): ElementInstanceMetadataMap {
@@ -1227,7 +1231,7 @@ export const MetadataUtils = {
       // TODO delete me
       throw new Error('Should not attempt to create empty elements.')
     }
-    if (targetParent == null || TP.isScenePath(targetParent)) {
+    if (targetParent == null || TP.isScenePath(targetParent) || TP.isScenePath(childPath)) {
       // TODO Scene Implementation
       return elements
     } else {
@@ -1284,12 +1288,10 @@ export const MetadataUtils = {
       pathToReplace: InstancePath,
       pathToReplaceWith: InstancePath,
       newElementInner: Either<string, JSXElementChild>,
-    ): InstancePath {
-      const newTemplatePath = TP.replaceIfAncestor(
-        element.templatePath,
-        pathToReplace,
-        pathToReplaceWith,
-      )
+    ): TemplatePath {
+      const newTemplatePath =
+        TP.replaceIfAncestor(element.templatePath, pathToReplace, pathToReplaceWith) ??
+        element.templatePath
 
       const newElementMetadata: ElementInstanceMetadata = {
         ...element,
@@ -1351,6 +1353,7 @@ export const MetadataUtils = {
 
     const allPathsWithReplacements = Object.values(metadata.elements)
       .map((e) => e.templatePath)
+      .filter(TP.isInstancePath)
       .filter((path) => TP.isAncestorOf(path, replaceSearch, true))
       .map((path) => {
         const replacement = TP.replaceOrDefault(path, replaceSearch, replaceWith)
@@ -1475,9 +1478,7 @@ export const MetadataUtils = {
   ): void {
     fastForEach(Object.values(metadata.elements), (elem) => {
       const parentPath = TP.parentPath(elem.templatePath)
-      const parent = TP.isInstancePath(parentPath)
-        ? this.getElementByInstancePathMaybe(metadata.elements, parentPath)
-        : null
+      const parent = this.getElementByInstancePathMaybe(metadata.elements, parentPath)
       withEachElement(elem, parent)
     })
   },
@@ -1492,7 +1493,7 @@ export function convertMetadataMap(
   Utils.fastForEach(Object.keys(scenes), (sceneIdString) => {
     const scene = scenes[sceneIdString]
     const sceneId = scene.scenePath
-    const rootElements = metadatas.filter((m) => TP.isChildOf(m, sceneId))
+    const rootElements = metadatas.filter((m) => TP.isChildOf(m, sceneId)).filter(TP.isInstancePath)
 
     components.push({
       ...scene,
