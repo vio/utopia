@@ -7,6 +7,8 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import { fastForEach } from '../../../../core/shared/utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { SpecialSizeMeasurementsKeepDeepEquality } from '../../../editor/store/store-deep-equality-instances'
+import { InlinePopupList } from '../../../../uuiui/widgets/popup-list/inline-popup-list'
+import { FlexRow } from '../../../../uuiui'
 
 interface LayoutSectionProps {
   hasNonDefaultPositionAttributes: boolean
@@ -32,8 +34,22 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
     (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
   )
 
+  const doNothing = React.useCallback(() => alert('Nothing'), [])
+
   return (
     <>
+      <FlexRow style={{ paddingLeft: 8, paddingRight: 8 }}>
+        <span style={{ fontWeight: 600 }}>Layout</span>
+        <InlinePopupList
+          options={[
+            { label: 'Flow (inline, block etc)', value: 'inline' },
+            { label: 'Flex', value: 'flex' },
+            { label: 'Grid', value: 'grid' },
+          ]}
+          value={{ label: 'Inline', value: 'inline' }}
+          onSubmitValue={doNothing}
+        />
+      </FlexRow>
       <SelfLayoutSubsection
         position={specialSizeMeasurements.position}
         isChildOfFlexComponent={specialSizeMeasurements.parentLayoutSystem === 'flex'}
