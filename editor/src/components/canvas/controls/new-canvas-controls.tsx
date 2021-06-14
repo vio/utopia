@@ -28,7 +28,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { isLiveMode, EditorModes } from '../../editor/editor-modes'
+import { isLiveMode, EditorModes, isSelectLiteMode } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -97,7 +97,6 @@ export interface ControlProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
-  elementsThatRespectLayout: Array<ElementPath>
   maybeClearHighlightsOnHoverEnd: () => void
   transientState: TransientCanvasState
   resolve: ResolveFn
@@ -221,37 +220,6 @@ interface NewCanvasControlsInnerProps {
   setLocalSelectedViews: (newSelectedViews: ElementPath[]) => void
 }
 
-export const selectElementsThatRespectLayout = createSelector(
-  (store: EditorStore) => store.derived.navigatorTargets,
-  (store: EditorStore) => store.editor.propertyControlsInfo,
-  (store: EditorStore) => getOpenUIJSFileKey(store.editor),
-  (store: EditorStore) => store.editor.projectContents,
-  (store: EditorStore) => store.editor.nodeModules.files,
-  (store: EditorStore) => store.editor.jsxMetadata,
-  (
-    navigatorTargets: ElementPath[],
-    propertyControlsInfo: PropertyControlsInfo,
-    openFilePath: string | null,
-    projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
-    metadata: ElementInstanceMetadataMap,
-  ) => {
-    const targetsWithRootViewPaths = flatMapArray((view) => {
-      const rootElements = MetadataUtils.getRootViewPaths(metadata, view)
-      return [view, ...rootElements]
-    }, navigatorTargets)
-    return targetsWithRootViewPaths.filter((view) => {
-      return targetRespectsLayout(
-        view,
-        propertyControlsInfo,
-        openFilePath,
-        projectContents,
-        nodeModules,
-      )
-    })
-  },
-)
-
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
@@ -263,6 +231,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const resizing = isResizing(props.editor.canvas.dragState)
   const dragging = isDragging(props.editor.canvas.dragState)
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
+  const draggingEnabled = !isSelectLiteMode(props.editor.mode)
+  const contextMenuEnabled = !isSelectLiteMode(props.editor.mode)
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
@@ -288,11 +258,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     }
     return 'enabled'
   }
-
-  const elementsThatRespectLayout = useEditorState(
-    selectElementsThatRespectLayout,
-    'NewCanvasControls elementsThatRespectLayout',
-  )
 
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
@@ -323,7 +288,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       windowToCanvasPosition: props.windowToCanvasPosition,
       cmdKeyPressed: cmdKeyPressed,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
-      elementsThatRespectLayout: elementsThatRespectLayout,
       maybeClearHighlightsOnHoverEnd: maybeClearHighlightsOnHoverEnd,
       projectContents: props.editor.projectContents,
       nodeModules: props.editor.nodeModules.files,
@@ -334,6 +298,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
       case 'select':
+      case 'select-lite':
       case 'live': {
         return (
           <SelectModeControlContainer
@@ -345,6 +310,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             isDragging={dragging}
             isResizing={resizing}
             selectionEnabled={selectionEnabled}
+            draggingEnabled={draggingEnabled}
+            contextMenuEnabled={contextMenuEnabled}
             maybeHighlightOnHover={maybeHighlightOnHover}
             maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
             duplicationState={props.editor.canvas.duplicationState}
